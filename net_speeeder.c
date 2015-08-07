@@ -1,3 +1,10 @@
+/*
+ * edited by dbw, Aug 7 2015
+ * 每个包发三遍，在我平均25%丢包率的vps效果较好，启用后丢包率降至1%
+ * original work forked from github.com/snooda/net-speeder
+ * Lisensed under GNU GPLv2
+ */
+
 #include <pcap.h>
 #include <stdio.h>
 #include <string.h>
@@ -45,6 +52,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 
 	if(ip->ip_ttl != SPECIAL_TTL) {
 		ip->ip_ttl = SPECIAL_TTL;
+		libnet_adv_write_raw_ipv4(libnet_handler, (u_int8_t *)ip, ntohs(ip->ip_len));//dbw: 多发送一次，进一步降低丢包率。
 		int len_written = libnet_adv_write_raw_ipv4(libnet_handler, (u_int8_t *)ip, ntohs(ip->ip_len));
 		if(len_written < 0) {
 			printf("packet len:[%d] actual write:[%d]\n", ntohs(ip->ip_len), len_written);
